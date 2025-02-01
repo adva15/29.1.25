@@ -1,0 +1,195 @@
+1.אופציה :1 הכנס רכב חדש לטיפול
+import sqlite3
+
+# connector
+conn = sqlite3.connect('29_1_25.db')
+conn.row_factory = sqlite3.Row
+
+# cursor
+cursor = conn.cursor()
+
+##### read from db
+
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS garage (
+    fix_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    car_number TEXT UNIQUE NOT NULL,
+    car_problem TEXT NOT NULL,
+    fixed BOOLEAN DEFAULT FALSE,
+    owner_ph TEXT NOT NULL
+)
+''')
+
+cursor.execute("""
+INSERT INTO garage (car_number, car_problem, fixed, owner_ph)
+VALUES ('23', 'Engine overheating after long drives', TRUE, '555-1023');
+""")
+cursor.execute("""
+INSERT INTO garage (car_number, car_problem, fixed, owner_ph)
+VALUES ('34', 'Brake pads worn out, needs replacement', TRUE, '555-1034');
+""")
+cursor.execute("""
+INSERT INTO garage (car_number, car_problem, fixed, owner_ph)
+VALUES ('30', 'Check engine light on, possible sensor issue', TRUE, '555-1030');
+""")
+cursor.execute("""
+INSERT INTO garage (car_number, car_problem, fixed, owner_ph)
+VALUES ('24', 'Battery drains overnight, needs diagnosis', FALSE, '555-1024');
+""")
+cursor.execute("""
+INSERT INTO garage (car_number, car_problem, fixed, owner_ph)
+VALUES ('3', 'Strange noise from suspension when turning', FALSE, '555-1003');
+""")
+print("Data inserted.")
+
+
+
+# נתונים לשדה
+car_number = '25'
+car_problem = 'Strange noise from suspension when turning'
+fixed = 0
+owner_ph = '555-10256'
+
+# ביצוע הפקודה
+cursor.execute("""
+INSERT INTO garage (car_number, car_problem, fixed, owner_ph)
+VALUES (?, ?, ?, ?)
+""", (car_number, car_problem, fixed, owner_ph))
+# write the data into the db file
+conn.commit()
+# 5 close connection
+conn.close()
+
+
+2.אופציה :2 סיום טיפול
+import sqlite3
+
+#  connector
+conn = sqlite3.connect('29_1_25.db')
+cursor = conn.cursor()
+
+# Reception
+garage = input("Insert Licensing Number: ")
+
+# Execute the query
+cursor.execute("SELECT * FROM garage WHERE car_number = ?", (garage,))
+in_garage = cursor.fetchall()
+
+if not in_garage:
+    print("The car is not in the garage")
+else:
+    if "fixed" != 1:
+        print("The treatment is already over.")
+    if "fixed_status" == 1:
+        print()
+    else:
+        cursor.execute("""
+                UPDATE garage
+                SET fixed = 1
+                WHERE car_number = ?
+                """, (garage,))
+
+        # write the data into the db file
+        conn.commit()
+
+# close connection
+conn.close()
+
+
+3.אופציה :3 הוצא רכב מהמוסך
+import sqlite3
+
+# connector
+conn = sqlite3.connect('29_1_25.db')
+cursor = conn.cursor()
+
+# Reception
+garage = input("Insert Licensing Number: ")
+
+# Execute the query
+cursor.execute("SELECT * FROM garage WHERE car_number = ?", (garage,))
+in_garage  = cursor.fetchone()
+
+if not in_garage :
+    print("The car is not in the garage.")
+else:
+    fixed_status = 'fixed'
+    if fixed_status != 1:
+        print("The treatment is not over yet.")
+        print(f"Call the car owner: {in_garage[4]}")
+    else:
+        cursor.execute("""
+        DELETE FROM garage WHERE car_number = ?
+        """, (garage,))
+
+        # write the data into the db file
+        conn.commit()
+
+# close connection
+conn.close()
+
+
+4.אופציה :4 בדיקת עומס טיפולים
+import sqlite3
+
+# connector
+conn = sqlite3.connect('29_1_25.db')
+cursor = conn.cursor()
+
+# Execute the query
+cursor.execute("SELECT * FROM garage WHERE fixed = 0")
+cars_Broken = cursor.fetchall()
+
+print(f"{len(cars_Broken)} Broken down vehicles waiting to be serviced.")
+
+# write the data into the db file
+conn.commit()
+
+# close connection
+conn.close()
+
+
+בונוס : 
+import sqlite3
+
+# Print function with color
+def print_color(message, color="red"):
+    match color:
+        case "red":
+            COLOR = '\033[31m'  # צבע אדום
+            RESET = '\033[0m'   # החזרת ברירת מחדל
+        case "purple":
+            COLOR = '\033[35m'  # צבע כחול
+            RESET = '\033[0m'   # החזרת ברירת מחדל
+        case _:
+            COLOR = '\033[31m'  # ברירת מחדל - אדום
+            RESET = '\033[0m'   # החזרת ברירת מחדל
+    print(f"{COLOR}{message}{RESET}")
+
+# connector
+conn = sqlite3.connect('29_1_25.db')
+cursor = conn.cursor()
+
+# Reception
+garage = input("Insert Licensing Number: ")
+
+# Execute the query
+cursor.execute("SELECT * FROM garage WHERE car_number = ?", (garage,))
+in_garage  = cursor.fetchone()
+try:
+    if not in_garage :
+        print_color("The car is not in the garage.", "purple")
+    else:
+        fixed_status = 'fixed'
+        if fixed_status != 1:
+            print_color("The treatment is not over yet.", "red")
+            print_color(f"Call the car owner: {in_garage[4]}", "red")
+except Exception as e:
+            cursor.execute("""
+            set FROM garage WHERE car_number = ?
+            """, (garage,))
+            print_color("purple")
+
+# close connection
+conn.close()
